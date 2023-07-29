@@ -6,29 +6,21 @@ export async function getGames(req, res) {
     res.send(games.rows);
   } catch (err) {
     console.log(err);
-    res.send(500);
+    res.sendStatus(500);
   }
 }
 
 export async function postGames(req, res) {
   try {
-    /*
-    {
-      id: 1,
-      name: 'Banco Imobiliário',
-      image: 'http://',
-      stockTotal: 3,
-      pricePerDay: 1500,
-    }  
-    */
-    // await db.query(`
-    // INSERT INTO games (name, image, stockTotal, pricePerDay) 
-    // VALUES ($1, $2, $3, $4);
-    // `, [res.locals])
-    console.log(res.locals);
+    const find_name = await db.query(`SELECT * FROM games WHERE name = $1`, [res.locals.name]);
+    if (find_name.rowCount !== 0) return res.sendStatus(409);
+    await db.query(`
+    INSERT INTO games (name, image, "stockTotal", "pricePerDay") VALUES ($1, $2, $3, $4);
+    `, [...Object.values(res.locals)]);
+
     res.sendStatus(201);
   } catch (err) {
     console.log(err);
-    res.send(500);
+    res.sendStatus(500);
   }
 }
