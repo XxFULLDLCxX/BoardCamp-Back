@@ -55,6 +55,10 @@ export async function readRentals(req, res) {
     if (req.query.status === 'closed') {
       SQL_FINAL += (SQL_FINAL.includes('WHERE') ? 'AND ' : 'WHERE ') + `rentals."returnDate" IS NOT NULL `;
     }
+    if ('startDate' in req.query) {
+      SQL_ARGS.push(req.query.startDate);
+      SQL_FINAL += (SQL_FINAL.includes('WHERE') ? 'AND ' : 'WHERE ') + `rentals."rentDate" >= $${SQL_ARGS.length}`;
+    }
     console.log(req.query);
     console.log(SQL_FINAL + SQL_ORDER + SQL_PAGE + ';', SQL_ARGS);
 
