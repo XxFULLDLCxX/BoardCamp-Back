@@ -18,14 +18,18 @@ export async function createGames(req, res) {
 export async function readGames(req, res) {
   try {
     const SQL_BASE = `SELECT * FROM games `;
-    const { SQL_PAG = '', PAG_ARGS = [] } = res.locals;
-    const SQL_ARGS = [...PAG_ARGS, req.query.name];
-    const games =
-      'name' in req.query
-        ? await db.query(SQL_BASE + `WHERE LOWER(name) LIKE LOWER($${SQL_ARGS.length}) || '%' ` + SQL_PAG + ';', SQL_ARGS)
-        : await db.query(SQL_BASE + SQL_PAG + ';', PAG_ARGS);
-    console.log(SQL_BASE + SQL_PAG + ';');
-    console.log(SQL_BASE + `WHERE name LIKE $${SQL_ARGS.length} || '%' ` + SQL_PAG + ';', SQL_ARGS);
+    const { SQL_PAGE = '', SQL_ORDER = '', PAGE_ARGS = [], ORDER_ARGS = [] } = res.locals;
+    const SQL_ARGS = [...ORDER_ARGS, ...PAGE_ARGS];
+    let SQL_FINAL = SQL_BASE;
+
+    if ('name' in req.query) {
+      SQL_ARGS.push(req.query.name);
+      SQL_FINAL += `WHERE LOWER(name) LIKE LOWER($${SQL_ARGS.length}) || '%' `;
+    }
+    console.log(SQL_BASE + SQL_PAGE + ';');
+    console.log(SQL_BASE + `WHERE name LIKE $${SQL_ARGS.length} || '%' ` + SQL_PAGE + ';', SQL_ARGS);
+
+    const games = await db.query(SQL_FINAL + SQL_ORDER + SQL_PAGE + ';', PAGE_ARGS);
     return res.send(games.rows);
   } catch (err) {
     console.log(err);

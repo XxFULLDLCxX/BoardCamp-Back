@@ -18,14 +18,18 @@ export async function createCustomers(req, res) {
 export async function readCustomers(req, res) {
   try {
     const SQL_BASE = `SELECT *, TO_CHAR(birthday, 'YYYY-MM-DD') birthday FROM customers `;
-    const { SQL_PAG = '', PAG_ARGS = [] } = res.locals;
-    const SQL_ARGS = [...PAG_ARGS, req.query.cpf];
-    const customers =
-      'cpf' in req.query
-        ? await db.query(SQL_BASE + `WHERE cpf LIKE $${SQL_ARGS.length} || '%' ` + SQL_PAG + ';', SQL_ARGS)
-        : await db.query(SQL_BASE + SQL_PAG + ';', PAG_ARGS);
-    console.log(SQL_BASE + SQL_PAG + ';');
-    console.log(SQL_BASE + `WHERE cpf LIKE $${SQL_ARGS.length} || '%' ` + SQL_PAG + ';', SQL_ARGS);
+    const { SQL_PAGE = '', SQL_ORDER = '', PAGE_ARGS = [], ORDER_ARGS = [] } = res.locals;
+    const SQL_ARGS = [...ORDER_ARGS, ...PAGE_ARGS];
+    let SQL_FINAL = SQL_BASE;
+
+    if ('cpf' in req.query) {
+      SQL_ARGS.push(req.query.cpf);
+      SQL_FINAL += `WHERE cpf LIKE $${SQL_ARGS.length} || '%' `;
+    }
+    console.log(req.query, SQL_ORDER);
+    console.log(SQL_FINAL + SQL_ORDER + SQL_PAGE + ';', SQL_ARGS);
+
+    const customers = await db.query(SQL_FINAL + SQL_ORDER + SQL_PAGE + ';', SQL_ARGS);
     return res.send(customers.rows);
   } catch (err) {
     console.log(err);

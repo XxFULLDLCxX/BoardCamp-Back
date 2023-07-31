@@ -36,8 +36,8 @@ export async function readRentals(req, res) {
     JOIN customers ON rentals."customerId" = customers.id
     JOIN games ON rentals."gameId" = games.id `;
 
-    const { SQL_PAG = '', PAG_ARGS = [] } = res.locals;
-    const SQL_ARGS = [...PAG_ARGS];
+    const { SQL_PAGE = '', SQL_ORDER = '', PAGE_ARGS = [], ORDER_ARGS = [] } = res.locals;
+    const SQL_ARGS = [...ORDER_ARGS, ...PAGE_ARGS];
 
     let SQL_FINAL = SQL_BASE;
 
@@ -47,11 +47,18 @@ export async function readRentals(req, res) {
     }
     if (!isNaN(req.query.gameId)) {
       SQL_ARGS.push(req.query.gameId);
-      SQL_FINAL += (!isNaN(req.query.customerId) ? 'AND ' : 'WHERE ') + `rentals."gameId" = $${SQL_ARGS.length} `;
+      SQL_FINAL += (SQL_FINAL.includes('WHERE') ? 'AND ' : 'WHERE ') + `rentals."gameId" = $${SQL_ARGS.length} `;
+    }
+    if (req.query.status === 'open') {
+      SQL_FINAL += (SQL_FINAL.includes('WHERE') ? 'AND ' : 'WHERE ') + `rentals."returnDate" IS NULL `;
+    }
+    if (req.query.status === 'closed') {
+      SQL_FINAL += (SQL_FINAL.includes('WHERE') ? 'AND ' : 'WHERE ') + `rentals."returnDate" IS NOT NULL `;
     }
     console.log(req.query);
-    console.log(SQL_FINAL + SQL_PAG + ';', SQL_ARGS);
-    const rentals = await db.query(SQL_FINAL + SQL_PAG + ';', SQL_ARGS);
+    console.log(SQL_FINAL + SQL_ORDER + SQL_PAGE + ';', SQL_ARGS);
+
+    const rentals = await db.query(SQL_FINAL + SQL_ORDER + SQL_PAGE + ';', SQL_ARGS);
     res.send(rentals.rows);
   } catch (err) {
     console.log(err);
