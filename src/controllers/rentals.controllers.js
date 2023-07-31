@@ -27,15 +27,24 @@ export async function createRentals(req, res) {
 
 export async function readRentals(req, res) {
   try {
-    const rentals = await db.query(
-      `SELECT rentals.*, 
-         TO_CHAR("rentDate", 'YYYY-MM-DD') "rentDate", 
-         TO_CHAR("returnDate", 'YYYY-MM-DD') "returnDate",
-         json_build_object('id', customers.id, 'name', customers.name) customer, 
-         json_build_object('id', games.id, 'name', games.name) game FROM rentals
-       JOIN customers ON rentals."customerId" = customers.id
-       JOIN games ON rentals."gameId" = games.id;`
-    );
+    const SQL_BASE = `
+    SELECT rentals.*, 
+      TO_CHAR("rentDate", 'YYYY-MM-DD') "rentDate", 
+      TO_CHAR("returnDate", 'YYYY-MM-DD') "returnDate",
+      json_build_object('id', customers.id, 'name', customers.name) customer, 
+      json_build_object('id', games.id, 'name', games.name) game FROM rentals
+    JOIN customers ON rentals."customerId" = customers.id
+    JOIN games ON rentals."gameId" = games.id `;
+
+    if (typeof req.query.gameId === 'number') {
+      const rentals = await db.query(SQL_BASE + `WHERE rentals."gameId" = $1;`, [req.query.gameId]);
+      return res.send(rentals.rows);
+    }
+    if (typeof req.query.customerId === 'number') {
+      const rentals = await db.query(SQL_BASE + `WHERE rentals."customerId" = $1;`, [req.query.customerId]);
+      return res.send(rentals.rows);
+    }
+    const rentals = await db.query(SQL_BASE + ';');
     res.send(rentals.rows);
   } catch (err) {
     console.log(err);
@@ -64,7 +73,9 @@ export async function returnRentalsById(req, res) {
     const delayFee = timeDiff > 0 ? timeDiff * pricePerDay : null;
 
     await db.query('UPDATE rentals SET "returnDate" = $2, "delayFee" = $3 WHERE id = $1;', [
-      req.params.id, returnDate, delayFee
+      req.params.id,
+      returnDate,
+      delayFee,
     ]);
     res.send([]);
   } catch (err) {
