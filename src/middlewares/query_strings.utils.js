@@ -23,7 +23,7 @@ export function orderBy(req, res, next) {
   let SQL_ORDER = '';
 
   if ('order' in req.query && ['id', ...validation].includes(req.query.order)) {
-    SQL_ORDER += `ORDER BY "${req.query.order}" ` + (req.query.desc === 'true' ? 'DESC ' : '');
+    SQL_ORDER += `ORDER BY ${req.path.slice(1)}."${req.query.order}" ` + (req.query.desc === 'true' ? 'DESC ' : '');
   }
   res.locals = { ...res.locals, SQL_ORDER };
   next();
