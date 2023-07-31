@@ -29,7 +29,7 @@ export async function readGames(req, res) {
     console.log(SQL_BASE + SQL_PAGE + ';');
     console.log(SQL_BASE + `WHERE name LIKE $${SQL_ARGS.length} || '%' ` + SQL_PAGE + ';', SQL_ARGS);
 
-    const games = await db.query(SQL_FINAL + SQL_ORDER + SQL_PAGE + ';', PAGE_ARGS);
+    const games = await db.query(SQL_FINAL + SQL_ORDER + SQL_PAGE + ';', SQL_ARGS);
     return res.send(games.rows);
   } catch (err) {
     console.log(err);
