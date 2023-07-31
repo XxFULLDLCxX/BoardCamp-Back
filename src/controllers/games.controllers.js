@@ -17,13 +17,16 @@ export async function createGames(req, res) {
 
 export async function readGames(req, res) {
   try {
-    if ('name' in req.query) {
-      const games = await db.query(`SELECT * FROM games WHERE LOWER(name) LIKE LOWER($1 || '%');`, [req.query.name]);
-      return res.send(games.rows);
-    }
-    const games = await db.query('SELECT * FROM games;');
-    res.send(games.rows);
-    return games.rows;
+    const SQL_BASE = `SELECT * FROM games `;
+    const { SQL_PAG = '', PAG_ARGS = [] } = res.locals;
+    const SQL_ARGS = [...PAG_ARGS, req.query.name];
+    const games =
+      'name' in req.query
+        ? await db.query(SQL_BASE + `WHERE LOWER(name) LIKE LOWER($${SQL_ARGS.length}) || '%' ` + SQL_PAG + ';', SQL_ARGS)
+        : await db.query(SQL_BASE + SQL_PAG + ';', PAG_ARGS);
+    console.log(SQL_BASE + SQL_PAG + ';');
+    console.log(SQL_BASE + `WHERE name LIKE $${SQL_ARGS.length} || '%' ` + SQL_PAG + ';', SQL_ARGS);
+    return res.send(games.rows);
   } catch (err) {
     console.log(err);
     res.sendStatus(500);

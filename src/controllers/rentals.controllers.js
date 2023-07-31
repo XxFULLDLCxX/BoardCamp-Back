@@ -36,15 +36,22 @@ export async function readRentals(req, res) {
     JOIN customers ON rentals."customerId" = customers.id
     JOIN games ON rentals."gameId" = games.id `;
 
-    if (typeof req.query.gameId === 'number') {
-      const rentals = await db.query(SQL_BASE + `WHERE rentals."gameId" = $1;`, [req.query.gameId]);
-      return res.send(rentals.rows);
+    const { SQL_PAG = '', PAG_ARGS = [] } = res.locals;
+    const SQL_ARGS = [...PAG_ARGS];
+
+    let SQL_FINAL = SQL_BASE;
+
+    if (!isNaN(req.query.customerId)) {
+      SQL_ARGS.push(req.query.customerId);
+      SQL_FINAL += `WHERE rentals."customerId" = $${SQL_ARGS.length} `;
     }
-    if (typeof req.query.customerId === 'number') {
-      const rentals = await db.query(SQL_BASE + `WHERE rentals."customerId" = $1;`, [req.query.customerId]);
-      return res.send(rentals.rows);
+    if (!isNaN(req.query.gameId)) {
+      SQL_ARGS.push(req.query.gameId);
+      SQL_FINAL += (!isNaN(req.query.customerId) ? 'AND ' : 'WHERE ') + `rentals."gameId" = $${SQL_ARGS.length} `;
     }
-    const rentals = await db.query(SQL_BASE + ';');
+    console.log(req.query);
+    console.log(SQL_FINAL + SQL_PAG + ';', SQL_ARGS);
+    const rentals = await db.query(SQL_FINAL + SQL_PAG + ';', SQL_ARGS);
     res.send(rentals.rows);
   } catch (err) {
     console.log(err);
