@@ -7,4 +7,4 @@ export const rentals_routes = Router();
 rentals_routes.post('/rentals', validateSchema(rentals_schema), createRentals);
 rentals_routes.get('/rentals', readRentals);
 rentals_routes.post('/rentals/:id/return', returnRentalsById);
-rentals_routes.delete('/rentals/:id', validateSchema(rentals_schema), deleteRentalsById);
+rentals_routes.delete('/rentals/:id', deleteRentalsById);

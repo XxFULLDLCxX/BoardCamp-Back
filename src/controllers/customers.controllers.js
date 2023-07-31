@@ -4,8 +4,9 @@ export async function createCustomers(req, res) {
   try {
     const find_name = await db.query(`SELECT * FROM customers WHERE cpf = $1;`, [res.locals.cpf]);
     if (find_name.rowCount !== 0) return res.sendStatus(409);
+    const { name, phone, cpf, birthday } = res.locals;
     await db.query(`INSERT INTO customers (name, phone, cpf, birthday) VALUES ($1, $2, $3, $4);`, [
-      ...Object.values(res.locals),
+      name, phone, cpf, birthday
     ]);
     res.sendStatus(201);
   } catch (err) {
@@ -37,13 +38,12 @@ export async function readCustomersById(req, res) {
 
 export async function updateCustomersById(req, res) {
   try {
-    const { id, cpf } = res.locals;
-    const find_cpf = await db.query(`SELECT * FROM customers WHERE id != $1 AND cpf = $2`, [id, cpf]);
+    const { name, phone, cpf, birthday } = res.locals;
+    const find_cpf = await db.query(`SELECT * FROM customers WHERE id != $1 AND cpf = $2`, [req.params.id, cpf]);
     if (find_cpf.rowCount !== 0) return res.sendStatus(409);
-
     await db.query(
       `UPDATE customers SET name = $2, phone = $3, cpf = $4, birthday = $5 WHERE id = $1;`,
-      [id, ...Object.values(res.locals)]
+      [req.params.id, name, phone, cpf, birthday]
     );
     res.send([]);
   } catch (err) {
