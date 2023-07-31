@@ -16,7 +16,7 @@ export async function createCustomers(req, res) {
 
 export async function readCustomers(req, res) {
   try {
-    const customers = await db.query('SELECT * FROM customers;');
+    const customers = await db.query(`SELECT *, TO_CHAR(birthday, 'YYYY-MM-DD') birthday FROM customers;`);
     res.send(customers.rows);
   } catch (err) {
     console.log(err);
@@ -26,9 +26,9 @@ export async function readCustomers(req, res) {
 
 export async function readCustomersById(req, res) {
   try {
-    const customers = await db.query('SELECT * FROM customers WHERE id = $1;', [req.params.id]);
+    const customers = await db.query(`SELECT *, TO_CHAR(birthday, 'YYYY-MM-DD') birthday FROM customers WHERE id = $1;`, [req.params.id]);
     if (customers.rowCount === 0) return res.sendStatus(404);
-    res.send(customers.rows);
+    res.send(customers.rows[0]);
   } catch (err) {
     console.log(err);
     res.sendStatus(500);
@@ -41,11 +41,11 @@ export async function updateCustomersById(req, res) {
     const find_cpf = await db.query(`SELECT * FROM customers WHERE id != $1 AND cpf = $2`, [id, cpf]);
     if (find_cpf.rowCount !== 0) return res.sendStatus(409);
 
-    const customers = await db.query(
+    await db.query(
       `UPDATE customers SET name = $2, phone = $3, cpf = $4, birthday = $5 WHERE id = $1;`,
       [id, ...Object.values(res.locals)]
     );
-    res.send(customers.rows);
+    res.send([]);
   } catch (err) {
     console.log(err);
     res.sendStatus(500);
