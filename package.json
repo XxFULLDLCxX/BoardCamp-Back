@@ -6,7 +6,9 @@
   "main": "src/app.js",
   "scripts": {
     "dev": "nodemon src/app.js",
-    "start": "node src/app.js"
+    "start": "node src/app.js",
+    "lint": "eslint .",
+    "postlint": "echo 'Well done! Your code has no linting errors.'"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +21,7 @@
     "pg": "^8.11.1"
   },
   "devDependencies": {
+    "eslint": "^8.55.0",
     "nodemon": "^3.0.1"
   }
 }
