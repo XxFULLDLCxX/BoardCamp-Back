@@ -59,8 +59,6 @@ export async function readRentals(req, res) {
       SQL_ARGS.push(req.query.startDate);
       SQL_FINAL += (SQL_FINAL.includes('WHERE') ? 'AND ' : 'WHERE ') + `rentals."rentDate" >= $${SQL_ARGS.length}`;
     }
-    console.log(req.query);
-    console.log(SQL_FINAL + SQL_ORDER + SQL_PAGE + ';', SQL_ARGS);
 
     const rentals = await db.query(SQL_FINAL + SQL_ORDER + SQL_PAGE + ';', SQL_ARGS);
     res.send(rentals.rows);

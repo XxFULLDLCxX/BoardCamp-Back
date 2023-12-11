@@ -26,8 +26,6 @@ export async function readCustomers(req, res) {
       SQL_ARGS.push(req.query.cpf);
       SQL_FINAL += `WHERE cpf LIKE $${SQL_ARGS.length} || '%' `;
     }
-    console.log(req.query, SQL_ORDER);
-    console.log(SQL_FINAL + SQL_ORDER + SQL_PAGE + ';', SQL_ARGS);
 
     const customers = await db.query(SQL_FINAL + SQL_ORDER + SQL_PAGE + ';', SQL_ARGS);
     return res.send(customers.rows);
